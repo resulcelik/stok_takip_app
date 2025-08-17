@@ -2,22 +2,54 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Kamera izinleri -->
+    <!-- ========================================== -->
+    <!-- NETWORK PERMISSIONS -->
+    <!-- ========================================== -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- ========================================== -->
+    <!-- BLUETOOTH PERMISSIONS - TSC ALPHA-3R PRINTER -->
+    <!-- ========================================== -->
+
+    <!-- Bluetooth Classic permissions (Android 11 ve altı) -->
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
+    <!-- Android 12+ (API 31+) Bluetooth permissions -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+
+    <!-- Konum izni (Bazı cihazlarda Bluetooth tarama için gerekli) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Bluetooth feature requirement -->
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
+
+    <!-- ========================================== -->
+    <!-- CAMERA PERMISSIONS (MEVCUT - KORUNDU) -->
+    <!-- ========================================== -->
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <!-- Titreşim izni -->
+    <!-- ========================================== -->
+    <!-- OTHER PERMISSIONS (MEVCUT - KORUNDU) -->
+    <!-- ========================================== -->
     <uses-permission android:name="android.permission.VIBRATE" />
-
-    <!-- Depolama izinleri -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-
-    <!-- Android 13+ için medya izinleri -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-    <!-- Kamera özelliği gerekli -->
+    <!-- ========================================== -->
+    <!-- HARDWARE FEATURES (MEVCUT - KORUNDU) -->
+    <!-- ========================================== -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -26,6 +58,7 @@
         android:required="false" />
 
     <application
+        android:name=".StokKontrolApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -34,23 +67,106 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+        <!-- ========================================== -->
+        <!-- AUTHENTICATION FLOW ACTIVITIES -->
+        <!-- ========================================== -->
+
+        <!-- 🚀 SPLASH SCREEN - App başlangıç noktası -->
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.splash.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.StokKontrolVeYonetimSistemi">
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <!-- ZXing Barcode Scanner Activity -->
+        <!-- 🔐 LOGIN SCREEN - Authentication gerektiğinde -->
+        <activity
+            android:name=".presentation.auth.login.LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- FORGOT PASSWORD SCREEN -->
+        <activity
+            android:name=".presentation.auth.forgot.ForgotPasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- ========================================== -->
+        <!-- MAIN APPLICATION ACTIVITIES -->
+        <!-- ========================================== -->
+
+        <!-- 📱 MAIN ACTIVITY - LAUNCHER WRAPPER ONLY (Authentication Router) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop" />
+
+        <!-- 📊 DASHBOARD ACTIVITY - ANA DASHBOARD (Main App Interface) -->
+        <activity
+            android:name=".presentation.main.DashboardActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop" />
+
+        <!-- ⚙️ SETTINGS ACTIVITY - Şifre ve Lokasyon Ayarları -->
+        <activity
+            android:name=".presentation.settings.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- 📍 LOCATION ACTIVITY - ✅ Cascade Dropdown Lokasyon Seçimi -->
+        <activity
+            android:name=".presentation.location.LocationActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".presentation.settings.SettingsActivity" />
+
+        <!-- 🏷️ RAF ETİKET ACTIVITY - ✅ RAF Etiket Üretim Sistemi (TSC Alpha-3R Bluetooth) -->
+        <activity
+            android:name=".presentation.rafetiket.RafEtiketActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".presentation.main.DashboardActivity" />
+
+        <!-- 🏷️ ÜRÜN ETİKET ACTIVITY - ✅ ÜRÜN Etiket Üretim Sistemi (TSC Alpha-3R Bluetooth) -->
+        <activity
+            android:name=".presentation.urun.UrunEtiketActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".presentation.main.DashboardActivity" />
+
+        <!-- ========================================== -->
+        <!-- EXTERNAL LIBRARY ACTIVITIES -->
+        <!-- ========================================== -->
+
+        <!-- ZXing Barcode Scanner Activity (CONFLICT DÜZELTMESİ) -->
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
-            tools:replace="screenOrientation" />
+            tools:replace="android:screenOrientation" />
 
     </application>
 

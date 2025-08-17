@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- ========================================== -->
+    <!-- DEVELOPMENT CONFIG (HTTP LOCALHOST ALLOW) -->
+    <!-- ==================10.0.2.2======================== -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Local development server -->
+        <domain includeSubdomains="false">10.10.10.111</domain>
+        <domain includeSubdomains="false">192.168.1.154</domain>
+        <domain includeSubdomains="false">10.10.10.65</domain>
+
+        <!-- Local network IP ranges (office network) -->
+        <domain includeSubdomains="false">192.168.1.1</domain>
+        <domain includeSubdomains="false">192.168.1.100</domain>
+        <domain includeSubdomains="false">192.168.0.1</domain>
+
+        <!-- Test server IP'leri ekleyebilirsiniz -->
+        <!-- <domain includeSubdomains="false">YOUR_TEST_SERVER_IP</domain> -->
+    </domain-config>
+
+    <!-- ========================================== -->
+    <!-- PRODUCTION CONFIG (HTTPS ONLY) -->
+    <!-- ========================================== -->
+    <!-- Production ortamda sadece HTTPS kullanılacak -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>
