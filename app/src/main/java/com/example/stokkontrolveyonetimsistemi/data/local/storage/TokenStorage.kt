@@ -91,6 +91,34 @@ class TokenStorage(private val context: Context) {
         }
     }
 
+    // TokenStorage.kt içine ekle (USER PREFERENCES MANAGEMENT bölümüne)
+
+    /**
+     * Get session ID for API calls
+     * Token'dan veya username'den session ID oluştur
+     */
+    fun getSessionId(): String? {
+        return try {
+            // Önce token'ı kontrol et
+            val token = getToken()
+            if (!token.isNullOrBlank()) {
+                // Token'dan session ID üret (ilk 20 karakter)
+                return token.take(20)
+            }
+
+            // Token yoksa username'i kullan
+            val username = getLastUsername()
+            if (username.isNotEmpty()) {
+                return "session_$username"
+            }
+
+            null
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to get session ID", e)
+            null
+        }
+    }
+
     /**
      * ✅ REQUIRED BY NETWORKMODULE: Check if token exists and is valid
      */

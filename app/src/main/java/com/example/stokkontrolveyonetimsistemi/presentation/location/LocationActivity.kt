@@ -2,7 +2,6 @@ package com.example.stokkontrolveyonetimsistemi.presentation.location
 
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -91,8 +90,6 @@ class LocationActivity : ComponentActivity() {
                         setResult(RESULT_LOCATION_CHANGED, resultIntent)
 
                         // Show success message
-                        Toast.makeText(this@LocationActivity, event.message, Toast.LENGTH_LONG).show()
-
                         finish()
                     }
 
@@ -103,7 +100,6 @@ class LocationActivity : ComponentActivity() {
 
                     is LocationNavigationEvent.ShowError -> {
                         Log.e(TAG, "Error event: ${event.message}")
-                        Toast.makeText(this@LocationActivity, event.message, Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -157,7 +153,6 @@ class LocationActivity : ComponentActivity() {
             finish()
         } catch (e: Exception) {
             Log.e(TAG, "Failed to navigate to login", e)
-            Toast.makeText(this, "Oturum süresi doldu. Lütfen uygulamayı yeniden başlatın.", Toast.LENGTH_LONG).show()
             finish()
         }
     }

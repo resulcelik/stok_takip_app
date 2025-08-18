@@ -1,186 +1,128 @@
+// NetworkModule.kt
 package com.example.stokkontrolveyonetimsistemi.di
 
-import com.example.stokkontrolveyonetimsistemi.BuildConfig
+import android.util.Log
+import com.example.stokkontrolveyonetimsistemi.BuildConfig // ✅ Uygulama BuildConfig
 import com.example.stokkontrolveyonetimsistemi.core.constants.ApiConstants
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
-import com.example.stokkontrolveyonetimsistemi.data.network.api.AuthApiService
-import com.example.stokkontrolveyonetimsistemi.data.network.api.LocationApiService
-import com.example.stokkontrolveyonetimsistemi.data.network.api.RafEtiketApiService
-import com.example.stokkontrolveyonetimsistemi.data.network.api.UserApiService
-import com.example.stokkontrolveyonetimsistemi.data.network.api.UrunEtiketApiService
+import com.example.stokkontrolveyonetimsistemi.data.network.api.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import okhttp3.ConnectionSpec
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.TlsVersion
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
-/**
- * Network layer dependency injection module
- * ✅ FIXED: UserApiService, RafEtiketApiService, UrunEtiketApiService eklendi
- */
 val networkModule = module {
 
-    // ==========================================
-    // CORE DEPENDENCIES
-    // ==========================================
-
-    // TokenStorage - Secure JWT storage
+    // Core
     single<TokenStorage> { TokenStorage(androidContext()) }
-
-    // Gson for JSON serialization
     single<Gson> {
-        GsonBuilder()
-            .setDateFormat("yyyy-MM-dd HH:mm:ss")
-            .setLenient()
-            .create()
+        GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").setLenient().create()
     }
 
-    // ==========================================
-    // HTTP INTERCEPTORS
-    // ==========================================
-
-    // JWT Authentication Interceptor
+    // Interceptors
     single<Interceptor>(qualifier = org.koin.core.qualifier.named("auth")) {
         Interceptor { chain ->
             val tokenStorage: TokenStorage = get()
-            val originalRequest = chain.request()
-
-            val newRequest = if (tokenStorage.hasValidToken()) {
-                originalRequest.newBuilder()
-                    .addHeader(
-                        ApiConstants.HEADER_AUTHORIZATION,
-                        "${ApiConstants.BEARER_PREFIX}${tokenStorage.getToken()}"
-                    )
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Accept", "application/json")
-                    .build()
-            } else {
-                originalRequest.newBuilder()
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("Accept", "application/json")
-                    .build()
+            val b = chain.request().newBuilder()
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+            if (tokenStorage.hasValidToken()) {
+                b.addHeader(ApiConstants.HEADER_AUTHORIZATION,
+                    "${ApiConstants.BEARER_PREFIX}${tokenStorage.getToken()}")
             }
-
-            chain.proceed(newRequest)
+            chain.proceed(b.build())
         }
     }
 
-    // Error handling interceptor
     single<Interceptor>(qualifier = org.koin.core.qualifier.named("error")) {
         Interceptor { chain ->
             try {
-                val response = chain.proceed(chain.request())
-
-                // Log network status
-                android.util.Log.d(
-                    "NetworkModule",
-                    "HTTP ${response.code} - ${response.request.url}"
-                )
-
-                response
+                val resp = chain.proceed(chain.request())
+                Log.d("NetworkModule", "HTTP ${resp.code} - ${resp.request.url}")
+                resp
             } catch (e: Exception) {
-                android.util.Log.e("NetworkModule", "Network error: ${e.localizedMessage}", e)
+                Log.e("NetworkModule", "Network error: ${e.localizedMessage}", e)
                 throw e
             }
         }
     }
 
-    // HTTP logging interceptor
     single<HttpLoggingInterceptor> {
         HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY
+            else HttpLoggingInterceptor.Level.NONE
         }
     }
 
-    // ==========================================
-    // HTTP CLIENT CONFIGURATION
-    // ==========================================
-
-    // OkHttpClient with interceptors and timeouts
+    // OkHttpClient (ZORLA TRUST-ALL)
     single<OkHttpClient> {
-        val authInterceptor: Interceptor = get(qualifier = org.koin.core.qualifier.named("auth"))
-        val errorInterceptor: Interceptor = get(qualifier = org.koin.core.qualifier.named("error"))
-        val loggingInterceptor: HttpLoggingInterceptor = get()
+        val auth: Interceptor = get(org.koin.core.qualifier.named("auth"))
+        val err: Interceptor = get(org.koin.core.qualifier.named("error"))
+        val log: HttpLoggingInterceptor = get()
 
-        OkHttpClient.Builder()
-            .connectTimeout(ApiConstants.CONNECT_TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(ApiConstants.READ_TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(ApiConstants.WRITE_TIMEOUT, TimeUnit.SECONDS)
-            .addInterceptor(errorInterceptor)
-            .addInterceptor(authInterceptor)
-            .addInterceptor(loggingInterceptor)
-            .retryOnConnectionFailure(true)
+        // 🔒 Trust-all TrustManager
+        val trustAllManagers = arrayOf<TrustManager>(object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+            override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) = Unit
+            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+        })
+        val x509 = trustAllManagers[0] as X509TrustManager
+
+        // 🔒 TLS context
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, trustAllManagers, SecureRandom())
+
+        // 🔒 Modern TLS + CLEARTEXT (IP testleri için)
+        val tlsSpec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
+            .tlsVersions(TlsVersion.TLS_1_3, TlsVersion.TLS_1_2)
             .build()
+
+        val builder = OkHttpClient.Builder()
+            .sslSocketFactory(sslContext.socketFactory, x509) // ✅ Zorla
+            .hostnameVerifier { hostname, _ ->
+                Log.w("NetworkModule", "⚠️ Hostname bypass: $hostname")
+                true
+            }
+            .connectionSpecs(listOf(tlsSpec, ConnectionSpec.CLEARTEXT))
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(err)
+            .addInterceptor(auth)
+            .addInterceptor(log)
+            .retryOnConnectionFailure(true)
+
+        Log.w("NetworkModule", "⚠️ TRUST-ALL SSL ENABLED (FOR DEV/TEST)!")
+
+        builder.build()
     }
 
-    // ==========================================
-    // RETROFIT CONFIGURATION
-    // ==========================================
-
-    // Main Retrofit instance
+    // Retrofit
     single<Retrofit> {
         Retrofit.Builder()
-            .baseUrl(ApiConstants.BASE_URL)
-            .client(get<OkHttpClient>())
-            .addConverterFactory(GsonConverterFactory.create(get<Gson>()))
+            .baseUrl(ApiConstants.BASE_URL) // https://10.10.10.65:8080/
+            .client(get())
+            .addConverterFactory(GsonConverterFactory.create(get()))
             .build()
     }
 
-    // ==========================================
-    // API SERVICES
-    // ==========================================
-
-    /**
-     * Authentication API service
-     * Login, password operations
-     */
-    single<AuthApiService> {
-        val retrofit: Retrofit = get()
-        retrofit.create(AuthApiService::class.java)
-    }
-
-    /**
-     * Location API service
-     * Cascade dropdown'lar için
-     */
-    single<LocationApiService> {
-        val retrofit: Retrofit = get()
-        retrofit.create(LocationApiService::class.java)
-    }
-
-    /**
-     * ✅ NEW: User API service
-     * User session ve lokasyon management
-     */
-    single<UserApiService> {
-        val retrofit: Retrofit = get()
-        retrofit.create(UserApiService::class.java)
-    }
-
-    /**
-     * ✅ NEW: RAF Etiket API service
-     * RAF etiket üretimi için
-     */
-    single<RafEtiketApiService> {
-        val retrofit: Retrofit = get()
-        retrofit.create(RafEtiketApiService::class.java)
-    }
-
-    /**
-     * ✅ NEW: Ürün Etiket API service
-     * Ürün etiket üretimi için
-     */
-    single<UrunEtiketApiService> {
-        val retrofit: Retrofit = get()
-        retrofit.create(UrunEtiketApiService::class.java)
-    }
+    // API services
+    single<AuthApiService> { get<Retrofit>().create(AuthApiService::class.java) }
+    single<LocationApiService> { get<Retrofit>().create(LocationApiService::class.java) }
+    single<UserApiService> { get<Retrofit>().create(UserApiService::class.java) }
+    single<RafEtiketApiService> { get<Retrofit>().create(RafEtiketApiService::class.java) }
+    single<UrunEtiketApiService> { get<Retrofit>().create(UrunEtiketApiService::class.java) }
 }

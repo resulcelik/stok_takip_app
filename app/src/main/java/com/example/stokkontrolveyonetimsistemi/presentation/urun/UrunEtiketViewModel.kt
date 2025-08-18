@@ -10,8 +10,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 /**
- * ÜRÜN Etiket ViewModel - Temiz ve Optimize
- * Bluetooth printer desteği ile ÜRÜN etiketi üretimi ve yazdırma
+ * ÜRÜN Etiket ViewModel - RAF ile AYNI MANTIK
  */
 class UrunEtiketViewModel(
     private val repository: UrunEtiketRepository,
@@ -45,7 +44,9 @@ class UrunEtiketViewModel(
     private fun checkPrinterConnection() {
         viewModelScope.launch {
             try {
+                // Önce TSC printer ara
                 val tscPrinter = printerService.findPairedTscPrinter()
+
                 if (tscPrinter != null) {
                     _printerState.update {
                         it.copy(
@@ -53,9 +54,22 @@ class UrunEtiketViewModel(
                             printerName = tscPrinter.name
                         )
                     }
-                    Log.d(TAG, "Printer bulundu: ${tscPrinter.name}")
+                    Log.d(TAG, "TSC Printer bulundu: ${tscPrinter.name}")
                 } else {
-                    Log.w(TAG, "TSC Printer bulunamadı")
+                    // TSC yoksa herhangi bir cihaz var mı kontrol et
+                    val pairedDevices = printerService.getPairedDevices()
+                    if (pairedDevices.isNotEmpty()) {
+                        val device = pairedDevices.first()
+                        _printerState.update {
+                            it.copy(
+                                isConnected = true,
+                                printerName = device.name
+                            )
+                        }
+                        Log.d(TAG, "Alternatif cihaz bulundu: ${device.name}")
+                    } else {
+                        Log.w(TAG, "Hiç eşleştirilmiş cihaz yok")
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Printer kontrol hatası", e)
@@ -107,8 +121,8 @@ class UrunEtiketViewModel(
      */
     private suspend fun handleGenerationSuccess(response: UrunBarkodResponse) {
         try {
-            val urunNumber = response.getPrintNumber()  // TEK NUMARA
-            val printCount = response.getPrintCount()   // KAÇ ADET
+            val urunNumber = response.getPrintNumber()
+            val printCount = response.getPrintCount()
 
             Log.d(TAG, "Üretim başarılı: $printCount adet")
             Log.d(TAG, "ÜRÜN numarası: $urunNumber")
@@ -118,7 +132,7 @@ class UrunEtiketViewModel(
                 state.copy(
                     isLoading = false,
                     lastGeneratedNumbers = List(printCount) { urunNumber },
-                    lastPrintNumber = urunNumber,  // lastNumber yerine lastPrintNumber
+                    lastPrintNumber = urunNumber,
                     printCount = printCount,
                     totalGenerated = state.totalGenerated + printCount,
                     todayGenerated = state.todayGenerated + printCount,
@@ -126,20 +140,141 @@ class UrunEtiketViewModel(
                 )
             }
 
-            // Success event - düzeltilmiş parametreler
+            // Success event
             _events.emit(UrunEtiketEvent.GenerationSuccess(urunNumber, printCount))
 
-            // Otomatik yazdır
-            if (_printerState.value.isConnected) {
-                printUrunLabels(urunNumber, printCount)  // response yerine direkt değerler
-            } else {
-                Log.w(TAG, "Printer bağlı değil")
-                _events.emit(UrunEtiketEvent.PrintError("Printer bağlı değil"))
-            }
+            // Otomatik yazdır - RAF ile AYNI MANTIK
+            printWithBluetooth()
 
         } catch (e: Exception) {
             Log.e(TAG, "Üretim sonrası hata", e)
             _events.emit(UrunEtiketEvent.Error("İşlem hatası: ${e.message}"))
+        }
+    }
+
+    /**
+     * Bluetooth ile yazdır - RAF ile AYNI MANTIK
+     */
+    private fun printWithBluetooth() {
+        val urunNumbers = _uiState.value.lastGeneratedNumbers
+        val urunNumber = _uiState.value.lastPrintNumber
+        val printCount = _uiState.value.printCount
+
+        if (urunNumbers.isEmpty() || urunNumber == null) {
+            viewModelScope.launch {
+                _events.emit(UrunEtiketEvent.PrintError("Yazdırılacak etiket yok"))
+            }
+            return
+        }
+
+        // Bluetooth kontrolü
+        if (!printerService.isBluetoothAvailable()) {
+            viewModelScope.launch {
+                _events.emit(UrunEtiketEvent.PrintError("Bluetooth kapalı veya kullanılamıyor"))
+            }
+            return
+        }
+
+        if (!printerService.hasBluetoothPermissions()) {
+            viewModelScope.launch {
+                _events.emit(UrunEtiketEvent.PrintError("Bluetooth izinleri gerekli"))
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            // TSC veya SPP printer bul - RAF İLE AYNI MANTIK!
+            val printer = printerService.findPairedTscPrinter()
+
+            if (printer == null) {
+                // Hiç cihaz yoksa hata
+                val pairedDevices = printerService.getPairedDevices()
+                if (pairedDevices.isEmpty()) {
+                    _events.emit(UrunEtiketEvent.PrintError("Eşleştirilmiş Bluetooth cihaz yok"))
+                    return@launch
+                } else {
+                    // Cihaz var ama TSC değil - İLKİNİ KULLAN (RAF GİBİ!)
+                    Log.w(TAG, "TSC bulunamadı, ${pairedDevices.size} cihaz var")
+
+                    pairedDevices.firstOrNull()?.let { device ->
+                        Log.d(TAG, "Alternatif cihaz kullanılıyor: ${device.name}")
+                        _printerState.update {
+                            it.copy(isPrinting = true, printedCount = 0, totalCount = printCount)
+                        }
+                        printToDevice(device, urunNumber, printCount)
+                    }
+                }
+                return@launch
+            }
+
+            // TSC Printer bulundu - yazdırmaya başla
+            Log.d(TAG, "Printer bulundu: ${printer.name} - yazdırma başlıyor")
+            _printerState.update {
+                it.copy(isPrinting = true, printedCount = 0, totalCount = printCount)
+            }
+
+            printToDevice(printer, urunNumber, printCount)
+        }
+    }
+
+    /**
+     * Cihaza yazdırma işlemi
+     */
+    private suspend fun printToDevice(device: android.bluetooth.BluetoothDevice, urunNumber: String, printCount: Int) {
+        try {
+            Log.d(TAG, "${device.name} cihazına yazdırılıyor: $urunNumber x $printCount")
+
+            var successCount = 0
+
+            // AYNI NUMARAYI İSTENEN ADET KADAR YAZDIR
+            for (i in 1..printCount) {
+                Log.d(TAG, "Yazdırılıyor: $urunNumber (${i}/$printCount)")
+
+                val success = printerService.printUrunEtiketBluetooth(
+                    device = device,
+                    urunNumber = urunNumber,
+                    currentIndex = i,
+                    totalCount = printCount,
+                    useBigText = true
+                )
+
+                if (success) {
+                    successCount++
+                    _printerState.update {
+                        it.copy(printedCount = successCount)
+                    }
+
+                    _events.emit(
+                        UrunEtiketEvent.PrintProgress(successCount, printCount)
+                    )
+                } else {
+                    Log.e(TAG, "Yazdırma hatası: $urunNumber (${i}/$printCount)")
+                }
+            }
+
+            _printerState.update { it.copy(isPrinting = false) }
+
+            if (successCount == printCount) {
+                _events.emit(UrunEtiketEvent.PrintSuccess(successCount))
+
+                // Başarılı yazdırma sonrası formu temizle
+                _uiState.update {
+                    it.copy(
+                        lastGeneratedNumbers = emptyList(),
+                        lastPrintNumber = null,
+                        printCount = 0
+                    )
+                }
+            } else if (successCount > 0) {
+                _events.emit(UrunEtiketEvent.PrintError("$successCount/$printCount yazdırıldı"))
+            } else {
+                _events.emit(UrunEtiketEvent.PrintError("Hiçbir etiket yazdırılamadı"))
+            }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Yazdırma hatası", e)
+            _printerState.update { it.copy(isPrinting = false) }
+            _events.emit(UrunEtiketEvent.PrintError(e.message ?: "Yazdırma hatası"))
         }
     }
 
@@ -157,73 +292,6 @@ class UrunEtiketViewModel(
         }
 
         _events.emit(UrunEtiketEvent.Error(message))
-    }
-
-    /**
-     * ÜRÜN etiketlerini yazdır
-     */
-    private suspend fun printUrunLabels(urunNumber: String, printCount: Int) {
-        try {
-            Log.d(TAG, "Yazdırma başlatılıyor: $urunNumber x $printCount")
-
-            _printerState.update {
-                it.copy(
-                    isPrinting = true,
-                    printedCount = 0,
-                    totalCount = printCount
-                )
-            }
-
-            val tscPrinter = printerService.findPairedTscPrinter()
-            if (tscPrinter == null) {
-                _events.emit(UrunEtiketEvent.PrintError("TSC Printer bulunamadı"))
-                _printerState.update { it.copy(isPrinting = false) }
-                return
-            }
-
-            var successCount = 0
-
-            // AYNI NUMARAYI İSTENEN ADET KADAR YAZDIR
-            for (i in 1..printCount) {
-                Log.d(TAG, "Yazdırılıyor: $urunNumber (${i}/$printCount)")
-
-                val success = printerService.printUrunEtiketBluetooth(
-                    device = tscPrinter,
-                    urunNumber = urunNumber,  // HEP AYNI NUMARA
-                    currentIndex = i,
-                    totalCount = printCount,
-                    useBigText = true
-                )
-
-                if (success) {
-                    successCount++
-                    _printerState.update {
-                        it.copy(printedCount = successCount)
-                    }
-
-                    _events.emit(
-                        UrunEtiketEvent.PrintProgress(successCount, printCount)
-                    )
-                } else {
-                    Log.e(TAG, "Yazdırma hatası: $urunNumber")
-                }
-            }
-
-            _printerState.update { it.copy(isPrinting = false) }
-
-            if (successCount == printCount) {
-                _events.emit(UrunEtiketEvent.PrintSuccess(successCount))
-            } else if (successCount > 0) {
-                _events.emit(UrunEtiketEvent.PrintError("$successCount/$printCount yazdırıldı"))
-            } else {
-                _events.emit(UrunEtiketEvent.PrintError("Hiçbir etiket yazdırılamadı"))
-            }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Yazdırma hatası", e)
-            _printerState.update { it.copy(isPrinting = false) }
-            _events.emit(UrunEtiketEvent.PrintError(e.message ?: "Yazdırma hatası"))
-        }
     }
 
     /**

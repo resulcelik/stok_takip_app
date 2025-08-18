@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Stok Kontrol ve Yonetim Sistemi"
+rootProject.name = "StokKontrolVeYonetimSistemi"
 include(":app")

@@ -4,7 +4,6 @@ package com.example.stokkontrolveyonetimsistemi.data.model.session
 
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 /**
  * User Session DTO
@@ -51,7 +50,9 @@ data class UserSessionDto(
     val selectedDepoAdi: String?,
 
     @SerializedName("selectedLokasyonDetay")
-    val selectedLokasyonDetay: String?
+    val selectedLokasyonDetay: String?,
+
+    val sessionRemainingMinutes: Int? = null
 ) {
     /**
      * Get full name

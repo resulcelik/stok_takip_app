@@ -3,7 +3,6 @@ package com.example.stokkontrolveyonetimsistemi.presentation.auth.login
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -109,12 +108,10 @@ class LoginActivity : ComponentActivity() {
 
             is AuthState.Error -> {
                 Log.w(TAG, "Authentication failed: ${currentState.message}")
-                showToast(currentState.message)
             }
 
             is AuthState.TokenExpired -> {
                 Log.w(TAG, "Token expired")
-                showToast("Oturum süresi dolmuş, lütfen tekrar giriş yapın")
             }
 
             is AuthState.Loading -> {
@@ -127,7 +124,6 @@ class LoginActivity : ComponentActivity() {
 
             AuthState.Unauthorized -> {
                 Log.w(TAG, "Unauthorized")
-                showToast("Yetkilendirme hatası")
             }
         }
     }
@@ -139,12 +135,10 @@ class LoginActivity : ComponentActivity() {
         when (val currentResetState = resetState) {
             is AuthState.Success -> {
                 Log.d(TAG, "Password reset successful")
-                showToast(currentResetState.message ?: "İşlem başarılı")
             }
 
             is AuthState.Error -> {
                 Log.w(TAG, "Password reset failed: ${currentResetState.message}")
-                showToast(currentResetState.message)
             }
 
             else -> {
@@ -162,7 +156,6 @@ class LoginActivity : ComponentActivity() {
 
         // Show success message
         if (!message.isNullOrBlank()) {
-            showToast(message)
         }
 
         // Navigate to DashboardActivity (not MainActivity)
@@ -194,15 +187,11 @@ class LoginActivity : ComponentActivity() {
      * Show incoming auth message
      */
     private fun showAuthMessage(message: String) {
-        showToast(message)
     }
 
     /**
      * Show toast message
      */
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-    }
 
     /**
      * Handle back button - exit app

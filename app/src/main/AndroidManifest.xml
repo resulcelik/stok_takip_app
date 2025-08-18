@@ -10,9 +10,13 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <!-- ========================================== -->
+    <!-- CAMERA PERMISSIONS - TEK TANIMLAMA -->
+    <!-- ========================================== -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- ========================================== -->
     <!-- BLUETOOTH PERMISSIONS - TSC ALPHA-3R PRINTER -->
     <!-- ========================================== -->
-
     <!-- Bluetooth Classic permissions (Android 11 ve altı) -->
     <uses-permission android:name="android.permission.BLUETOOTH"
         android:maxSdkVersion="30" />
@@ -27,18 +31,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-    <!-- Bluetooth feature requirement -->
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
-
     <!-- ========================================== -->
-    <!-- CAMERA PERMISSIONS (MEVCUT - KORUNDU) -->
-    <!-- ========================================== -->
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <!-- ========================================== -->
-    <!-- OTHER PERMISSIONS (MEVCUT - KORUNDU) -->
+    <!-- OTHER PERMISSIONS -->
     <!-- ========================================== -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -48,7 +42,7 @@
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- ========================================== -->
-    <!-- HARDWARE FEATURES (MEVCUT - KORUNDU) -->
+    <!-- HARDWARE FEATURES - TEK TANIMLAMA -->
     <!-- ========================================== -->
     <uses-feature
         android:name="android.hardware.camera"
@@ -56,10 +50,13 @@
     <uses-feature
         android:name="android.hardware.camera.autofocus"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth"
+        android:required="false" />
 
     <application
         android:name=".StokKontrolApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -152,6 +149,15 @@
         <!-- 🏷️ ÜRÜN ETİKET ACTIVITY - ✅ ÜRÜN Etiket Üretim Sistemi (TSC Alpha-3R Bluetooth) -->
         <activity
             android:name=".presentation.urun.UrunEtiketActivity"
+            android:exported="false"
+            android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:parentActivityName=".presentation.main.DashboardActivity" />
+
+        <!-- 📱 MOBILE REGISTRATION ACTIVITY - Mobil Kayıt İşlemleri -->
+        <activity
+            android:name=".presentation.mobile.MobileRegistrationActivity"
             android:exported="false"
             android:theme="@style/Theme.StokKontrolVeYonetimSistemi"
             android:screenOrientation="portrait"

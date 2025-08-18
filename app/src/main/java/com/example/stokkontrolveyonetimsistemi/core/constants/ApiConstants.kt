@@ -13,7 +13,7 @@ object ApiConstants {
     // ==========================================
     // BASE URLS
     // ==========================================
-    const val BASE_URL = "http://10.10.10.65:8080/"
+    const val BASE_URL = "https://78.187.40.116:8443/"
     const val API_BASE = "api/"
     const val AUTH_BASE = "${API_BASE}auth/"
     const val USER_BASE = "${API_BASE}user/"
@@ -59,6 +59,7 @@ object ApiConstants {
     // Terminal RAF etiket üretimi (HTML response döner)
     const val RAF_GENERATE_LABELS = "${RAF_BASE}generate-labels"           // ✅ POST - Query params: adet, boyut
 
+
     // ==========================================
     // ÜRÜN (PRODUCT) ENDPOINTS
     // ==========================================
@@ -83,6 +84,24 @@ object ApiConstants {
     // File upload endpoints
     const val MOBILE_FILE_BASE = "${MOBILE_BASE}file/"
     const val MOBILE_FILE_URUN_UPLOAD = "${MOBILE_FILE_BASE}urun/"          // ✅ Future: Photo upload
+
+    // RAF Mobile İşlemleri
+    const val RAF_CREATE_MOBILE = "${RAF_BASE}create-mobile"                // POST - Mobile RAF oluşturma
+
+    // Ürün Preview İşlemleri
+    const val URUN_PREVIEW_NEXT = "${URUN_BASE}preview-next"               // GET - Sonraki ürün no önizleme
+
+    // Mobile Fotoğraf İşlemleri
+    const val MOBILE_PHOTO_BASE = "${MOBILE_BASE}photo/"
+    const val MOBILE_PHOTO_TEMP_UPLOAD = "${MOBILE_PHOTO_BASE}temp-upload"  // POST - Geçici fotoğraf yükleme
+    const val MOBILE_PHOTO_TEMP_DELETE = "${MOBILE_PHOTO_BASE}temp/"        // DELETE - Geçici fotoğraf silme /{photoId}
+    const val MOBILE_PHOTO_TEMP_LIST = "${MOBILE_PHOTO_BASE}temp-list"      // GET - Geçici fotoğrafları listele
+
+    // Mobile Ana Kayıt
+    const val MOBILE_COMPLETE_REGISTRATION = "${MOBILE_BASE}complete-registration" // POST - Toplu kayıt işlemi
+
+    // Dropdown Data - Aktif Listeler (Mevcut SETTINGS_STOK_BIRIMI_ALL yerine)
+    const val SETTINGS_STOK_BIRIMI_AKTIF = "${SETTINGS_BASE}stok-birimi/aktif"
 
     // ==========================================
     // BARCODE GENERATION ENDPOINTS - PRODUCT LABELS

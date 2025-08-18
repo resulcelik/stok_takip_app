@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -44,7 +43,6 @@ class RafEtiketActivity : ComponentActivity() {
             viewModel.generateRafEtiketleri()
         } else {
             Log.e(TAG, "Bluetooth izinleri reddedildi")
-            Toast.makeText(this, "Bluetooth izinleri gerekli", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -55,12 +53,10 @@ class RafEtiketActivity : ComponentActivity() {
         val allGranted = permissions.values.all { it }
         if (allGranted) {
             Log.d(TAG, "Bluetooth izinleri verildi")
-            Toast.makeText(this, "Bluetooth izinleri verildi", Toast.LENGTH_SHORT).show()
             // İzin verildiyse yazdırmayı başlat
             viewModel.printWithBluetooth()
         } else {
             Log.e(TAG, "Bluetooth izinleri reddedildi")
-            Toast.makeText(this, "Bluetooth izinleri gerekli", Toast.LENGTH_LONG).show()
         }
     }
 

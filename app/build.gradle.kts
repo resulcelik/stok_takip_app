@@ -2,26 +2,27 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // ❌ REMOVED: id("kotlin-kapt") - Room kullanmıyoruz
 }
 
 android {
     namespace = "com.example.stokkontrolveyonetimsistemi"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
+        multiDexEnabled = false
         applicationId = "com.example.stokkontrolveyonetimsistemi"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // BuildConfig fields for API configuration
-        buildConfigField("String", "BASE_URL", "\"http://192.168.1.100:8080/\"")
+        buildConfigField("String", "BASE_URL", "\"https://10.10.10.65:8080/\"")
         buildConfigField("String", "API_VERSION", "\"api/\"")
         buildConfigField("boolean", "DEBUG_MODE", "true")
+
     }
 
     buildTypes {
@@ -32,14 +33,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Production API URL
-            buildConfigField("String", "BASE_URL", "\"https://your-production-api.com/\"")
+            // Production API URL'inizi güncelleyin
+            buildConfigField("String", "BASE_URL", "\"https://78.187.40.116:8443/\"") // Production URL'nizi buraya yazın
             buildConfigField("boolean", "DEBUG_MODE", "false")
-        }
-        debug {
-            isDebuggable = true
-            applicationIdSuffix = ".debug"
-            versionNameSuffix = "-DEBUG"
+
+            // Signing config ekleyin (eğer yoksa)
+            signingConfig = signingConfigs.getByName("debug") // Geçici olarak debug key kullanabilirsiniz
         }
     }
 
@@ -54,7 +53,7 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true  // BuildConfig support
+        buildConfig = true
     }
 
     composeOptions {
@@ -74,7 +73,7 @@ android {
 
 dependencies {
     // ==========================================
-    // COMPOSE & UI CORE (MEVCUT - KORUNDU)
+    // COMPOSE & UI CORE
     // ==========================================
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -87,35 +86,39 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+    // Compose Runtime - BOM ile yönetilir
+    implementation(libs.runtime.livedata)
 
     // ==========================================
-    // BARCODE SCANNING (MEVCUT - KORUNDU)
+    // BARCODE SCANNING
     // ==========================================
     implementation(libs.zxing.android.embedded)
     implementation(libs.core)
 
-    // Advanced Camera support
-    implementation(libs.androidx.camera.core)
-    implementation(libs.androidx.camera.camera2)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.view)
+    // ==========================================
+    // CAMERA
+    // ==========================================
+    val cameraxVersion = "1.3.0"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
 
     // ==========================================
-    // NETWORK & API (YENİ - ENTERPRISE)
+    // NETWORK & API
     // ==========================================
-    // Retrofit for REST API
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-
-    // JSON processing
     implementation("com.google.code.gson:gson:2.10.1")
 
     // ==========================================
-    // JWT AUTHENTICATION (YENİ - SECURITY)
+    // JWT AUTHENTICATION
     // ==========================================
-    // JWT for Android (conflict-free versions)
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     implementation("io.jsonwebtoken:jjwt-impl:0.11.5") {
         exclude(group = "org.jetbrains", module = "annotations")
@@ -128,7 +131,7 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // ==========================================
-    // DEPENDENCY INJECTION (YENİ - ARCHITECTURE)
+    // DEPENDENCY INJECTION
     // ==========================================
     implementation("io.insert-koin:koin-android:3.5.3") {
         exclude(group = "org.jetbrains", module = "annotations")
@@ -138,42 +141,26 @@ dependencies {
     }
 
     // ==========================================
-    // ❌ REMOVED: LOCAL DATABASE - Room kullanmıyoruz şu anda
+    // UTILITIES
     // ==========================================
-    // Room dependency'lerini kaldırdık - gelecekte eklenecek
-    // implementation("androidx.room:room-runtime:2.6.1")
-    // implementation("androidx.room:room-ktx:2.6.1")
-    // kapt("androidx.room:room-compiler:2.6.1")
-
-    // ==========================================
-    // ADDITIONAL UTILITIES (YENİ - ENTERPRISE)
-    // ==========================================
-    // Coroutines for async operations
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // Image loading (for product images)
     implementation("io.coil-kt:coil-compose:2.5.0")
-
-    // SwipeRefresh support
-    implementation("androidx.compose.material:material:1.5.4")
-
-    // Permission handling
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
-
-    // Date/Time handling
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
+    // SwipeRefresh support - Compose BOM ile otomatik yönetilir
+    implementation("androidx.compose.material:material")
+
     // ==========================================
-    // HARDWARE INTEGRATION (YENİ - ENTERPRISE)
+    // HARDWARE INTEGRATION
     // ==========================================
-    // Vibration feedback
     implementation("androidx.core:core:1.12.0")
 
-    // External scanner support libraries
+    // External libraries (printer JAR/AAR files)
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar"))))
 
     // ==========================================
-    // TESTING (CONFLICT-FREE)
+    // TESTING
     // ==========================================
     testImplementation(libs.junit)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")

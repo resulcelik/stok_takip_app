@@ -9,6 +9,7 @@ import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import com.example.stokkontrolveyonetimsistemi.di.authModule
 import com.example.stokkontrolveyonetimsistemi.di.locationModule
 import com.example.stokkontrolveyonetimsistemi.di.mainModule
+import com.example.stokkontrolveyonetimsistemi.di.mobileModule
 import com.example.stokkontrolveyonetimsistemi.di.networkModule
 import com.example.stokkontrolveyonetimsistemi.di.rafEtiketModule
 import com.example.stokkontrolveyonetimsistemi.di.urunEtiketModule
@@ -71,7 +72,8 @@ class StokKontrolApplication : Application() {
                 mainModule,        // Dashboard & Session validation
                 locationModule,    // Location cascade & session management
                 rafEtiketModule,   // ✅ NEW: RAF etiket üretimi
-                urunEtiketModule
+                urunEtiketModule,
+                mobileModule
             )
         }
 

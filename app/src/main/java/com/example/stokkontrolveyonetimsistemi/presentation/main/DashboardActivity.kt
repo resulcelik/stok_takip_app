@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import com.example.stokkontrolveyonetimsistemi.data.model.dashboard.DashboardModule
 import com.example.stokkontrolveyonetimsistemi.presentation.auth.login.LoginActivity
+import com.example.stokkontrolveyonetimsistemi.presentation.mobile.MobileRegistrationActivity
 import com.example.stokkontrolveyonetimsistemi.presentation.settings.SettingsActivity
 import com.example.stokkontrolveyonetimsistemi.presentation.rafetiket.RafEtiketActivity
 import com.example.stokkontrolveyonetimsistemi.presentation.urun.UrunEtiketActivity
@@ -241,8 +242,14 @@ class DashboardActivity : ComponentActivity() {
      * Open Product Add Activity - ✅ PLACEHOLDER FOR FUTURE
      */
     private fun openProductAdd() {
-        Toast.makeText(this, "Ürün Ekleme modülü geliştiriliyor", Toast.LENGTH_SHORT).show()
-        Log.d(TAG, "URUN_EKLE module requested - will be implemented next")
+        try {
+            val intent = Intent(this, MobileRegistrationActivity::class.java)
+            startActivity(intent)
+            Log.d(TAG, "MobileRegistrationActivity launched successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to open MobileRegistrationActivity", e)
+            Toast.makeText(this, "Ürün Ekleme açılamadı", Toast.LENGTH_SHORT).show()
+        }
     }
 
     /**

@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -47,7 +46,6 @@ class UrunEtiketActivity : ComponentActivity() {
             handleGenerateWithPermission()
         } else {
             Log.e(TAG, "Bluetooth izinleri reddedildi")
-            Toast.makeText(this, "Bluetooth izinleri gerekli", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -105,57 +103,27 @@ class UrunEtiketActivity : ComponentActivity() {
             viewModel.events.collect { event ->
                 when (event) {
                     is UrunEtiketEvent.GenerationSuccess -> {
-                        Toast.makeText(
-                            this@UrunEtiketActivity,
-                            "${event.count} adet ÜRÜN numarası üretildi (${event.number})",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         Log.d(TAG, "Üretim başarılı: ${event.count} adet, Numara: ${event.number}")
                     }
 
                     is UrunEtiketEvent.PrintSuccess -> {
-                        Toast.makeText(
-                            this@UrunEtiketActivity,
-                            "${event.count} adet etiket yazdırıldı",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         Log.d(TAG, "Yazdırma başarılı: ${event.count} adet")
                     }
 
                     is UrunEtiketEvent.Error -> {
-                        Toast.makeText(
-                            this@UrunEtiketActivity,
-                            "Hata: ${event.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
                         Log.e(TAG, "Üretim hatası: ${event.message}")
                     }
 
                     is UrunEtiketEvent.PrintError -> {
-                        Toast.makeText(
-                            this@UrunEtiketActivity,
-                            "Yazdırma hatası: ${event.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
                         Log.e(TAG, "Yazdırma hatası: ${event.message}")
                     }
 
                     UrunEtiketEvent.PrinterConnected -> {
-                        Toast.makeText(
-                            this@UrunEtiketActivity,
-                            "Printer bağlandı",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         Log.d(TAG, "Printer bağlantısı başarılı")
                     }
 
                     // ✅ YENİ EKLENEN EVENT'LER
                     UrunEtiketEvent.PrinterDisconnected -> {
-                        Toast.makeText(
-                            this@UrunEtiketActivity,
-                            "Printer bağlantısı kesildi",
-                            Toast.LENGTH_SHORT
-                        ).show()
                         Log.d(TAG, "Printer bağlantısı kesildi")
                     }
 

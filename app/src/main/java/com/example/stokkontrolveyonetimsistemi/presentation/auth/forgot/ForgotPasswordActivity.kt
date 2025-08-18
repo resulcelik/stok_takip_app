@@ -118,12 +118,10 @@ class ForgotPasswordActivity : ComponentActivity() {
         when (val currentResetState = resetState) {
             is AuthState.Success -> {
                 Log.d(TAG, "Reset operation successful: ${currentResetState.message}")
-                showToast(currentResetState.message ?: "İşlem başarılı")
             }
 
             is AuthState.Error -> {
                 Log.w(TAG, "Reset operation failed: ${currentResetState.message}")
-                showToast(currentResetState.message)
             }
 
             is AuthState.Loading -> {
@@ -142,8 +140,6 @@ class ForgotPasswordActivity : ComponentActivity() {
      */
     private fun handlePasswordResetSuccess(message: String) {
         Log.d(TAG, "Password reset completed successfully")
-
-        showToast("Şifre başarıyla değiştirildi. Login sayfasına yönlendiriliyorsunuz.")
 
         // Navigate back to login with success message
         val intent = Intent(this, LoginActivity::class.java).apply {
@@ -173,9 +169,6 @@ class ForgotPasswordActivity : ComponentActivity() {
     /**
      * Show toast message
      */
-    private fun showToast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-    }
 
     override fun onDestroy() {
         super.onDestroy()

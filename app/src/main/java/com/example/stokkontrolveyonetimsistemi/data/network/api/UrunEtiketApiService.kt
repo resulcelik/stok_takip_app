@@ -19,7 +19,9 @@ interface UrunEtiketApiService {
      */
     @POST(ApiConstants.URUN_GENERATE_LABELS)
     suspend fun generateUrunEtiketleri(
-        @Query("adet") adet: Int
+        @Query("adet") adet: Int,
+        @Query("boyut") boyut: String = "STANDART",
+        @Query("herBatchteAdet") herBatchteAdet: Int
     ): Response<UrunGetResponse>
 
 }
