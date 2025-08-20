@@ -18,16 +18,11 @@ import kotlinx.coroutines.launch
 class LoginViewModel(
     private val loginUseCase: LoginUseCase,
     private val autoLoginUseCase: AutoLoginUseCase,
-    private val resetPasswordUseCase: ResetPasswordUseCase
 ) : ViewModel() {
 
     companion object {
         private const val TAG = "LoginViewModel"
     }
-
-    // ==========================================
-    // UI STATE MANAGEMENT
-    // ==========================================
 
     // Form input states
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -46,13 +41,6 @@ class LoginViewModel(
         loadLastLoginInfo()
     }
 
-    // ==========================================
-    // FORM INPUT HANDLING
-    // ==========================================
-
-    /**
-     * Update username input
-     */
     fun updateUsername(username: String) {
         _uiState.value = _uiState.value.copy(
             username = username,
@@ -60,9 +48,6 @@ class LoginViewModel(
         )
     }
 
-    /**
-     * Update password input
-     */
     fun updatePassword(password: String) {
         _uiState.value = _uiState.value.copy(
             password = password,
@@ -70,31 +55,18 @@ class LoginViewModel(
         )
     }
 
-    /**
-     * Toggle password visibility
-     */
     fun togglePasswordVisibility() {
         _uiState.value = _uiState.value.copy(
             isPasswordVisible = !_uiState.value.isPasswordVisible
         )
     }
 
-    /**
-     * Toggle remember me checkbox
-     */
     fun toggleRememberMe() {
         _uiState.value = _uiState.value.copy(
             rememberMe = !_uiState.value.rememberMe
         )
     }
 
-    // ==========================================
-    // AUTHENTICATION OPERATIONS
-    // ==========================================
-
-    /**
-     * Perform login operation
-     */
     fun login() {
         val currentState = _uiState.value
 
@@ -120,9 +92,6 @@ class LoginViewModel(
         }
     }
 
-    /**
-     * Handle authentication result
-     */
     private fun handleAuthResult(authState: AuthState) {
         when (authState) {
             is AuthState.Success -> {
@@ -146,49 +115,6 @@ class LoginViewModel(
         }
     }
 
-    // ==========================================
-    // PASSWORD RESET OPERATIONS
-    // ==========================================
-
-    /**
-     * Send password reset email
-     */
-    fun sendResetEmail(email: String) {
-        Log.d(TAG, "Sending reset email for: ${email.take(3)}***${email.takeLast(3)}")
-
-        viewModelScope.launch {
-            resetPasswordUseCase.sendResetEmail(email).collect { resetState ->
-                _resetState.value = resetState
-            }
-        }
-    }
-
-    /**
-     * Reset password with verification code
-     */
-    fun resetPassword(
-        email: String,
-        code: String,
-        newPassword: String,
-        confirmPassword: String
-    ) {
-        Log.d(TAG, "Resetting password for: ${email.take(3)}***${email.takeLast(3)}")
-
-        viewModelScope.launch {
-            resetPasswordUseCase.resetPassword(email, code, newPassword, confirmPassword)
-                .collect { resetState ->
-                    _resetState.value = resetState
-                }
-        }
-    }
-
-    // ==========================================
-    // FORM VALIDATION
-    // ==========================================
-
-    /**
-     * Validate form inputs
-     */
     private fun isFormValid(state: LoginUiState): Boolean {
         var isValid = true
 
@@ -213,9 +139,6 @@ class LoginViewModel(
         return isValid
     }
 
-    /**
-     * Clear form validation errors
-     */
     private fun clearFormErrors() {
         _uiState.value = _uiState.value.copy(
             usernameError = null,
@@ -224,22 +147,12 @@ class LoginViewModel(
         )
     }
 
-    /**
-     * Set general form error
-     */
     private fun setFormError(message: String) {
         _uiState.value = _uiState.value.copy(
             generalError = message
         )
     }
 
-    // ==========================================
-    // DATA MANAGEMENT
-    // ==========================================
-
-    /**
-     * Load last login information
-     */
     private fun loadLastLoginInfo() {
         try {
             val lastLoginInfo = autoLoginUseCase.getLastLoginInfo()
@@ -257,9 +170,6 @@ class LoginViewModel(
         }
     }
 
-    /**
-     * Clear sensitive data from memory
-     */
     private fun clearSensitiveData() {
         _uiState.value = _uiState.value.copy(
             password = "", // Clear password from memory
@@ -268,36 +178,19 @@ class LoginViewModel(
         )
     }
 
-    // ==========================================
-    // STATE RESET OPERATIONS
-    // ==========================================
-
-    /**
-     * Reset authentication state
-     */
     fun resetAuthState() {
         _authState.value = AuthState.Idle
     }
 
-    /**
-     * Reset password reset state
-     */
     fun resetPasswordResetState() {
         _resetState.value = AuthState.Idle
     }
 
-    /**
-     * Reset all states
-     */
     fun resetAllStates() {
         resetAuthState()
         resetPasswordResetState()
         clearFormErrors()
     }
-
-    // ==========================================
-    // LIFECYCLE MANAGEMENT
-    // ==========================================
 
     override fun onCleared() {
         super.onCleared()
@@ -308,10 +201,7 @@ class LoginViewModel(
     }
 }
 
-/**
- * Login UI state data class
- * Form state management için immutable state
- */
+
 data class LoginUiState(
     // Form inputs
     val username: String = "",
@@ -328,9 +218,7 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val isFormEnabled: Boolean = true
 ) {
-    /**
-     * Check if form can be submitted
-     */
+
     fun canSubmit(): Boolean {
         return username.isNotBlank() &&
                 password.isNotBlank() &&

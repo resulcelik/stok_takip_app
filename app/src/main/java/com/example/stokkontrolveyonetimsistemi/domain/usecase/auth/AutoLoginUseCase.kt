@@ -6,10 +6,6 @@ import com.example.stokkontrolveyonetimsistemi.data.repository.AuthRepository
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Auto Login Use Case
- * Otomatik giriş kontrolü için business logic
- */
 class AutoLoginUseCase(
     private val authRepository: AuthRepository,
     private val tokenStorage: TokenStorage
@@ -18,9 +14,6 @@ class AutoLoginUseCase(
         private const val TAG = "AutoLoginUseCase"
     }
 
-    /**
-     * Execute auto login check
-     */
     suspend fun execute(): Flow<AuthState> {
         Log.d(TAG, "Checking auto login eligibility")
 
@@ -40,9 +33,6 @@ class AutoLoginUseCase(
         }
     }
 
-    /**
-     * Get last login info for remember me
-     */
     fun getLastLoginInfo(): LastLoginInfo? {
         return try {
             if (tokenStorage.isRememberMeEnabled()) {
@@ -57,32 +47,6 @@ class AutoLoginUseCase(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get last login info", e)
             null
-        }
-    }
-
-    /**
-     * Check if auto login should be attempted
-     */
-    fun shouldAttemptAutoLogin(): Boolean {
-        return try {
-            tokenStorage.isAutoLoginEnabled() &&
-                    tokenStorage.isRememberMeEnabled() &&
-                    tokenStorage.getLastUsername().isNotEmpty()
-        } catch (e: Exception) {
-            Log.e(TAG, "Auto login eligibility check failed", e)
-            false
-        }
-    }
-
-    /**
-     * Disable auto login
-     */
-    fun disableAutoLogin() {
-        try {
-            tokenStorage.setAutoLoginEnabled(false)
-            Log.d(TAG, "Auto login disabled")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to disable auto login", e)
         }
     }
 }

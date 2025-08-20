@@ -6,10 +6,6 @@ import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-/**
- * ✅ SIMPLIFIED Logout Use Case - SADECE TOKEN CLEANUP
- * Hızlı çıkış işlemi - AuthRepository dependency yok
- */
 class LogoutUseCase(
     private val tokenStorage: TokenStorage
 ) {
@@ -17,9 +13,6 @@ class LogoutUseCase(
         private const val TAG = "LogoutUseCase"
     }
 
-    /**
-     * ✅ Execute fast logout - DIREKT TOKEN CLEANUP
-     */
     suspend fun execute(): Flow<AuthState> = flow {
         try {
             emit(AuthState.Loading)
@@ -50,9 +43,6 @@ class LogoutUseCase(
         }
     }
 
-    /**
-     * ✅ Token cleanup işlemleri
-     */
     private fun performTokenCleanup() {
         try {
             Log.d(TAG, "Performing token cleanup")
@@ -76,9 +66,6 @@ class LogoutUseCase(
         }
     }
 
-    /**
-     * ✅ Security cleanup işlemleri
-     */
     private fun performSecurityCleanup() {
         try {
             Log.d(TAG, "Performing security cleanup")
@@ -91,25 +78,6 @@ class LogoutUseCase(
 
         } catch (e: Exception) {
             Log.e(TAG, "Security cleanup failed", e)
-        }
-    }
-
-    /**
-     * ✅ Emergency logout
-     */
-    suspend fun emergencyLogout(): Flow<AuthState> = flow {
-        try {
-            Log.w(TAG, "Emergency logout initiated")
-
-            // Force complete clear
-            tokenStorage.clearUserSession()
-            tokenStorage.setAutoLoginEnabled(false)
-
-            emit(AuthState.Success("Acil çıkış tamamlandı"))
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Emergency logout failed", e)
-            emit(AuthState.Error("Acil çıkış işlemi başarısız"))
         }
     }
 }

@@ -3,17 +3,6 @@ package com.example.stokkontrolveyonetimsistemi.data.model.location
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
-/**
- * Location management models
- * Backend API'deki lokasyon DTO'larına uygun model sınıfları
- * Hiyerarşik yapı: Bölge -> İl -> İlçe -> Depo
- *
- * Dosya Konumu: /data/model/location/LocationModels.kt
- */
-
-// ==========================================
-// LOCATION HIERARCHY DTOs
-// ==========================================
 
 /**
  * Bölge (Region) DTO
@@ -26,12 +15,7 @@ data class BolgeDto(
 
     @SerializedName("bolgeAdi")
     val bolgeAdi: String
-) {
-    /**
-     * Display name for UI
-     */
-    fun getDisplayName(): String = bolgeAdi
-}
+)
 
 /**
  * İl (Province) DTO
@@ -47,12 +31,7 @@ data class IlDto(
 
     @SerializedName("bolgeId")
     val bolgeId: Long
-) {
-    /**
-     * Display name for UI
-     */
-    fun getDisplayName(): String = ilAdi
-}
+)
 
 /**
  * İlçe (District) DTO
@@ -68,12 +47,7 @@ data class IlceDto(
 
     @SerializedName("ilId")
     val ilId: Long
-) {
-    /**
-     * Display name for UI
-     */
-    fun getDisplayName(): String = ilceAdi
-}
+)
 
 /**
  * Depo (Warehouse) DTO
@@ -96,16 +70,6 @@ data class DepoDto(
     @SerializedName("aktif")
     val aktif: Boolean
 ) {
-    /**
-     * Display name for UI with address
-     */
-    fun getDisplayName(): String = "$depoAdi - $adres"
-
-    /**
-     * Short display name
-     */
-    fun getShortName(): String = depoAdi
-
     /**
      * Is warehouse active/available
      */

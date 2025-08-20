@@ -4,18 +4,14 @@ import android.util.Log
 import com.example.stokkontrolveyonetimsistemi.core.constants.ApiConstants
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import com.example.stokkontrolveyonetimsistemi.data.model.auth.*
-import com.example.stokkontrolveyonetimsistemi.data.network.api.AuthApiService
+import com.example.stokkontrolveyonetimsistemi.data.network.auth.api.AuthApiService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
 
-/**
- * Authentication repository
- * Manages authentication operations with automatic token expiry handling
- * Modüler tasarım ile token yönetimi ve API işlemleri
- */
+
 class AuthRepository(
     private val authApiService: AuthApiService,
     private val tokenStorage: TokenStorage
@@ -25,14 +21,6 @@ class AuthRepository(
         private const val TAG = "AuthRepository"
     }
 
-    // ==========================================
-    // LOGIN OPERATIONS
-    // ==========================================
-
-    /**
-     * Perform user login
-     * Otomatik token kaydetme ve başarı durumu yönetimi
-     */
     suspend fun login(username: String, password: String): Flow<AuthState> = flow {
         try {
             emit(AuthState.Loading)
@@ -98,10 +86,7 @@ class AuthRepository(
         }
     }
 
-    /**
-     * Auto-login check
-     * Otomatik giriş kontrolü - token geçerliliği + süre kontrolü
-     */
+
     suspend fun checkAutoLogin(): Flow<AuthState> = flow {
         try {
             emit(AuthState.Loading)
@@ -162,13 +147,7 @@ class AuthRepository(
         }
     }
 
-    // ==========================================
-    // PASSWORD OPERATIONS
-    // ==========================================
 
-    /**
-     * Send password reset email
-     */
     suspend fun sendResetEmail(email: String): Flow<AuthState> = flow {
         try {
             emit(AuthState.Loading)
@@ -197,9 +176,7 @@ class AuthRepository(
         }
     }
 
-    /**
-     * Reset password with verification code
-     */
+
     suspend fun resetPassword(
         email: String,
         code: String,
@@ -241,9 +218,7 @@ class AuthRepository(
         }
     }
 
-    /**
-     * Change password for authenticated user
-     */
+
     suspend fun changePassword(
         currentPassword: String,
         newPassword: String,
@@ -299,35 +274,6 @@ class AuthRepository(
         }
     }
 
-    // ==========================================
-    // TOKEN MANAGEMENT UTILITIES
-    // ==========================================
-
-    /**
-     * Check if user is currently authenticated
-     */
-    fun isUserAuthenticated(): Boolean {
-        return tokenStorage.isTokenValid()
-    }
-
-    /**
-     * Get current user authentication status
-     */
-    fun getTokenStatus(): TokenValidationResult {
-        return when {
-            tokenStorage.getToken().isNullOrBlank() -> TokenValidationResult.Missing
-            !tokenStorage.isTokenValid() -> TokenValidationResult.Expired
-            else -> TokenValidationResult.Valid
-        }
-    }
-
-    // ==========================================
-    // ERROR HANDLING UTILITIES
-    // ==========================================
-
-    /**
-     * Handle HTTP exceptions with proper user messages
-     */
     private fun handleHttpException(exception: HttpException): AuthState? {
         return when (exception.code()) {
             ApiConstants.HTTP_UNAUTHORIZED -> {
@@ -341,9 +287,6 @@ class AuthRepository(
         }
     }
 
-    /**
-     * Handle network errors with user-friendly messages
-     */
     private fun handleNetworkError(exception: Exception): String {
         return when (exception) {
             is SocketTimeoutException -> "Bağlantı zaman aşımı"

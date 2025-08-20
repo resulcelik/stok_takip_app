@@ -19,9 +19,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // BuildConfig fields for API configuration
-        buildConfigField("String", "BASE_URL", "\"https://10.10.10.65:8080/\"")
-        buildConfigField("String", "API_VERSION", "\"api/\"")
-        buildConfigField("boolean", "DEBUG_MODE", "true")
+      //  buildConfigField("String", "BASE_URL", "\"https://10.10.10.3:8080/\"")
+     //   buildConfigField("String", "API_VERSION", "\"api/\"")
+       // buildConfigField("boolean", "DEBUG_MODE", "true")
 
     }
 
@@ -34,8 +34,8 @@ android {
                 "proguard-rules.pro"
             )
             // Production API URL'inizi güncelleyin
-            buildConfigField("String", "BASE_URL", "\"https://78.187.40.116:8443/\"") // Production URL'nizi buraya yazın
-            buildConfigField("boolean", "DEBUG_MODE", "false")
+            //buildConfigField("String", "BASE_URL", "\"https://172.20.10.3:8080/\"") // Production URL'nizi buraya yazın
+            //buildConfigField("boolean", "DEBUG_MODE", "false")
 
             // Signing config ekleyin (eğer yoksa)
             signingConfig = signingConfigs.getByName("debug") // Geçici olarak debug key kullanabilirsiniz

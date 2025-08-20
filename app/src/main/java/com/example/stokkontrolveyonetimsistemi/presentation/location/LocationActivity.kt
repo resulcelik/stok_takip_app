@@ -18,14 +18,7 @@ import com.example.stokkontrolveyonetimsistemi.ui.theme.StokKontrolVeYonetimSist
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-/**
- * Location Selection Activity
- * 4-seviye cascade dropdown ekranı
- *
- * Dosya Konumu: /presentation/location/LocationActivity.kt
- * Pattern: DashboardActivity.kt ve SettingsActivity.kt pattern'ını takip ediyor
- * Features: Cascade dropdowns, real-time API, modern Material3 UI
- */
+
 class LocationActivity : ComponentActivity() {
 
     companion object {
@@ -62,14 +55,6 @@ class LocationActivity : ComponentActivity() {
         }
     }
 
-    // ==========================================
-    // NAVIGATION EVENT HANDLING
-    // ==========================================
-
-    /**
-     * Setup navigation event observer
-     * ViewModel navigation events'leri dinle
-     */
     private fun setupNavigationObserver() {
         lifecycleScope.launch {
             locationViewModel.navigationEvent.collect { event ->
@@ -106,14 +91,7 @@ class LocationActivity : ComponentActivity() {
         }
     }
 
-    // ==========================================
-    // MAIN UI CONTENT
-    // ==========================================
 
-    /**
-     * Main location screen content
-     * Ana lokasyon seçim ekranı
-     */
     @Composable
     private fun LocationScreen() {
         val uiState by locationViewModel.uiState.collectAsState()
@@ -136,14 +114,6 @@ class LocationActivity : ComponentActivity() {
         }
     }
 
-    // ==========================================
-    // NAVIGATION HELPERS
-    // ==========================================
-
-    /**
-     * Navigate to login screen
-     * Token süresi dolduğunda login'e yönlendir
-     */
     private fun navigateToLogin() {
         try {
             val intent = android.content.Intent(this, LoginActivity::class.java).apply {
@@ -156,10 +126,6 @@ class LocationActivity : ComponentActivity() {
             finish()
         }
     }
-
-    // ==========================================
-    // ACTIVITY LIFECYCLE
-    // ==========================================
 
     override fun onResume() {
         super.onResume()
@@ -174,14 +140,5 @@ class LocationActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "LocationActivity destroyed")
-    }
-
-    /**
-     * Handle system back button
-     * Sistem geri butonunu handle et
-     */
-    override fun onBackPressed() {
-        Log.d(TAG, "System back button pressed")
-        locationViewModel.onBackPressed()
     }
 }

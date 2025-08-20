@@ -6,10 +6,6 @@ import com.example.stokkontrolveyonetimsistemi.data.repository.AuthRepository
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Login Use Case
- * Login işlemleri için business logic
- */
 class LoginUseCase(
     private val authRepository: AuthRepository,
     private val tokenStorage: TokenStorage
@@ -18,9 +14,6 @@ class LoginUseCase(
         private const val TAG = "LoginUseCase"
     }
 
-    /**
-     * Execute login operation
-     */
     suspend fun execute(
         username: String,
         password: String,
@@ -50,9 +43,6 @@ class LoginUseCase(
         }
     }
 
-    /**
-     * Save remember me information
-     */
     private fun saveRememberMeInfo(username: String) {
         try {
             tokenStorage.setRememberMe(true)
@@ -65,31 +55,8 @@ class LoginUseCase(
             Log.e(TAG, "Failed to save remember me info", e)
         }
     }
-
-    /**
-     * Get last login info for UI
-     */
-    fun getLastLoginInfo(): LastLoginInfo? {
-        return try {
-            if (tokenStorage.isRememberMeEnabled()) {
-                LastLoginInfo(
-                    username = tokenStorage.getLastUsername(),
-                    rememberMe = true,
-                    lastLoginTime = tokenStorage.getLastLoginTime()
-                )
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to get last login info", e)
-            null
-        }
-    }
 }
 
-/**
- * Last login information data class
- */
 data class LastLoginInfo(
     val username: String,
     val rememberMe: Boolean,

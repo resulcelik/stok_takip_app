@@ -1,4 +1,3 @@
-// data/model/urun/UrunBilgileri.kt
 package com.example.stokkontrolveyonetimsistemi.data.model.urun
 
 import androidx.annotation.Keep

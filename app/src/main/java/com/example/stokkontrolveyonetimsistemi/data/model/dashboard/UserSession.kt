@@ -40,29 +40,11 @@ data class UserSession(
     fun getDisplayName(): String = fullName?.takeIf { it.isNotBlank() } ?: username
 
     /**
-     * Get session duration in minutes
-     */
-    fun getSessionDuration(): Long {
-        return (Date().time - loginTime.time) / (1000 * 60)
-    }
-
-    /**
-     * Check if user has permission
-     */
-    fun hasPermission(permission: String): Boolean = permissions.contains(permission)
-
-    /**
      * Get role display name
      */
     fun getRoleDisplayName(): String = role.displayName
 
-    /**
-     * Check if session is active (activity within last 30 minutes)
-     */
-    fun isSessionActive(): Boolean {
-        val inactiveTime = (Date().time - lastActivity.time) / (1000 * 60)
-        return inactiveTime < 30
-    }
+
 }
 
 /**
@@ -94,10 +76,6 @@ data class UserLocation(
      */
     fun getFullLocationName(): String = "$warehouseName, $districtName, $provinceName"
 
-    /**
-     * Get short location string
-     */
-    fun getShortLocationName(): String = warehouseName
 }
 
 /**
@@ -111,27 +89,4 @@ data class SessionStatistics(
     val errorsCount: Int = 0,
     val averageScanTime: Double = 0.0,
     val sessionStartTime: Date = Date()
-) {
-    /**
-     * Get scans per minute rate
-     */
-    fun getScansPerMinute(): Double {
-        val sessionMinutes = (Date().time - sessionStartTime.time) / (1000 * 60).toDouble()
-        return if (sessionMinutes > 0) scansCount / sessionMinutes else 0.0
-    }
-
-    /**
-     * Get error rate percentage
-     */
-    fun getErrorRate(): Double {
-        return if (scansCount > 0) (errorsCount.toDouble() / scansCount) * 100 else 0.0
-    }
-
-    /**
-     * Check if session is productive (more than 10 scans per hour)
-     */
-    fun isProductiveSession(): Boolean {
-        val scansPerHour = getScansPerMinute() * 60
-        return scansPerHour > 10
-    }
-}
+)

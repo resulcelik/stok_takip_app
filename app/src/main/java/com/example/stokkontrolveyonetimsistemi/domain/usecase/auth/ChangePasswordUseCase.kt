@@ -5,10 +5,6 @@ import com.example.stokkontrolveyonetimsistemi.data.model.auth.AuthState
 import com.example.stokkontrolveyonetimsistemi.data.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Change Password Use Case
- * Şifre değiştirme işlemleri için business logic
- */
 class ChangePasswordUseCase(
     private val authRepository: AuthRepository
 ) {
@@ -56,9 +52,6 @@ class ChangePasswordUseCase(
         }
     }
 
-    /**
-     * Validate password strength
-     */
     private fun isPasswordValid(password: String): Boolean {
         return password.isNotBlank() &&
                 password.length >= 6 &&

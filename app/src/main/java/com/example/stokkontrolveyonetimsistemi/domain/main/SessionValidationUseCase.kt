@@ -4,16 +4,11 @@ import android.util.Log
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
 import com.example.stokkontrolveyonetimsistemi.data.model.dashboard.SessionInfo
 import com.example.stokkontrolveyonetimsistemi.data.model.dashboard.SessionValidationState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Date
 
-/**
- * Session Validation Use Case
- * JWT token validation ve session monitoring
- * 🔧 FIXED: Crash-safe monitoring with proper exception handling
- */
+
 class SessionValidationUseCase(
     private val tokenStorage: TokenStorage
 ) {
@@ -23,10 +18,6 @@ class SessionValidationUseCase(
         private const val WARNING_THRESHOLD_MINUTES = 5L
     }
 
-    /**
-     * Execute session validation
-     * 🔧 FIXED: Exception-safe validation
-     */
     suspend fun execute(): Flow<SessionValidationState> = flow {
         try {
             Log.d(TAG, "Validating user session")
@@ -70,10 +61,6 @@ class SessionValidationUseCase(
         }
     }
 
-    /**
-     * Get session information
-     * 🔧 FIXED: Safe info retrieval
-     */
     fun getSessionInfo(): SessionInfo {
         return try {
             val expiryInfo = tokenStorage.getTokenExpiryInfo()
@@ -93,11 +80,6 @@ class SessionValidationUseCase(
         }
     }
 
-    /**
-     * Start session monitoring with callbacks
-     * 🔧 REMOVED: Bu method'u kaldırıyoruz çünkü ViewModel'de safe monitoring var
-     * ViewModel kendi monitoring'ini yapacak
-     */
     @Deprecated("Use ViewModel-based monitoring instead", ReplaceWith("ViewModel.startSafeSessionMonitoring()"))
     suspend fun startSessionMonitoring(
         intervalMinutes: Long = 1L,
@@ -109,10 +91,6 @@ class SessionValidationUseCase(
         emit(SessionValidationState.Error("Use ViewModel monitoring"))
     }
 
-    /**
-     * Update last activity timestamp
-     * 🔧 FIXED: Safe activity update
-     */
     fun updateLastActivity() {
         try {
             // Store current timestamp as last activity

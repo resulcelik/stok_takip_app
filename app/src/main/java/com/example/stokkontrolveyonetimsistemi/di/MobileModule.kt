@@ -7,10 +7,6 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
-/**
- * Mobile Terminal Operations Module
- * Ürün ekleme workflow'u için DI konfigürasyonu
- */
 val mobileModule = module {
 
     // API Service

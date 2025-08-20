@@ -7,9 +7,6 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
-/**
- * ÜRÜN Etiket Module - Dependency Injection
- */
 val urunEtiketModule = module {
 
     // ÜRÜN API Service

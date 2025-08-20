@@ -1,11 +1,14 @@
-// NetworkModule.kt
 package com.example.stokkontrolveyonetimsistemi.di
 
 import android.util.Log
 import com.example.stokkontrolveyonetimsistemi.BuildConfig // ✅ Uygulama BuildConfig
 import com.example.stokkontrolveyonetimsistemi.core.constants.ApiConstants
 import com.example.stokkontrolveyonetimsistemi.data.local.storage.TokenStorage
-import com.example.stokkontrolveyonetimsistemi.data.network.api.*
+import com.example.stokkontrolveyonetimsistemi.data.network.api.LocationApiService
+import com.example.stokkontrolveyonetimsistemi.data.network.api.RafEtiketApiService
+import com.example.stokkontrolveyonetimsistemi.data.network.api.UrunEtiketApiService
+import com.example.stokkontrolveyonetimsistemi.data.network.api.UserApiService
+import com.example.stokkontrolveyonetimsistemi.data.network.auth.api.AuthApiService
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.ConnectionSpec

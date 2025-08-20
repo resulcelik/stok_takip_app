@@ -24,14 +24,4 @@ data class SessionInfo(
     val minutesUntilExpiry: Long = 0L,
     val lastActivity: Date? = null,
     val warningThreshold: Long = 5L // minutes
-) {
-    /**
-     * Should show session warning
-     */
-    fun shouldShowWarning(): Boolean = isValid && minutesUntilExpiry <= warningThreshold
-
-    /**
-     * Is session expired
-     */
-    fun isExpired(): Boolean = minutesUntilExpiry <= 0L
-}
+)

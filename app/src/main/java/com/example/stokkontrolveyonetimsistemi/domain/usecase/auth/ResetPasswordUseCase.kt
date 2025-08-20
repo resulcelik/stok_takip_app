@@ -5,10 +5,6 @@ import com.example.stokkontrolveyonetimsistemi.data.model.auth.AuthState
 import com.example.stokkontrolveyonetimsistemi.data.repository.AuthRepository
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Reset Password Use Case
- * Şifre sıfırlama işlemleri için business logic
- */
 class ResetPasswordUseCase(
     private val authRepository: AuthRepository
 ) {
@@ -16,9 +12,6 @@ class ResetPasswordUseCase(
         private const val TAG = "ResetPasswordUseCase"
     }
 
-    /**
-     * Send password reset email
-     */
     suspend fun sendResetEmail(email: String): Flow<AuthState> {
         Log.d(TAG, "Sending reset email to: ${email.take(3)}***${email.takeLast(4)}")
 
@@ -36,9 +29,6 @@ class ResetPasswordUseCase(
         }
     }
 
-    /**
-     * Reset password with verification code
-     */
     suspend fun resetPassword(
         email: String,
         code: String,
@@ -78,30 +68,17 @@ class ResetPasswordUseCase(
         }
     }
 
-    // ==========================================
-    // VALIDATION HELPERS
-    // ==========================================
-
-    /**
-     * Validate email format
-     */
     private fun isEmailValid(email: String): Boolean {
         return email.isNotBlank() &&
                 android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    /**
-     * Validate verification code
-     */
     private fun isCodeValid(code: String): Boolean {
         return code.isNotBlank() &&
                 code.length == 6 &&
                 code.all { it.isDigit() }
     }
 
-    /**
-     * Validate password strength
-     */
     private fun isPasswordValid(password: String): Boolean {
         return password.isNotBlank() && password.length >= 6
     }

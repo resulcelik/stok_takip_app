@@ -7,11 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.*
 
-/**
- * Get Quick Stats Use Case - CLEANED VERSION
- * Backend API entegrasyonu için hazırlanmış temiz versiyon
- * Tüm mock data kaldırıldı
- */
+
 class GetQuickStatsUseCase(
     private val tokenStorage: TokenStorage
 ) {
@@ -19,10 +15,6 @@ class GetQuickStatsUseCase(
         private const val TAG = "GetQuickStatsUseCase"
     }
 
-    /**
-     * Execute quick stats retrieval
-     * TODO: Backend API'den gerçek veri çekimi eklenecek
-     */
     suspend fun execute(forceRefresh: Boolean = false): Flow<Result<QuickStats>> = flow {
         try {
             Log.d(TAG, "Loading quick statistics (forceRefresh: $forceRefresh)")
@@ -61,24 +53,4 @@ class GetQuickStatsUseCase(
             emit(Result.failure(e))
         }
     }
-
-    /**
-     * TODO: Backend API integration method
-     * Bu method backend API hazır olduğunda implement edilecek
-     */
-    /*
-    private suspend fun fetchStatsFromApi(): QuickStats {
-        return try {
-            val response = statsApiService.getTodayQuickStats()
-            if (response.isSuccessful) {
-                response.body() ?: QuickStats()
-            } else {
-                QuickStats()
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "API stats fetch failed", e)
-            QuickStats()
-        }
-    }
-    */
 }

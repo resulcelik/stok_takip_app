@@ -4,11 +4,6 @@ import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
 /**
- * Authentication request models for different auth operations
- * JWT authentication, password operations için request modelleri
- */
-
-/**
  * Login request model
  * POST /api/auth/login için kullanılır
  */
@@ -54,14 +49,4 @@ data class ResetPasswordRequest(
 
     @SerializedName("newPasswordConfirm")
     val newPasswordConfirm: String
-)
-
-/**
- * Send reset email request
- * POST /api/auth/sendpasswordresetemail için kullanılır
- */
-@Keep
-data class SendResetEmailRequest(
-    @SerializedName("email")
-    val email: String
 )

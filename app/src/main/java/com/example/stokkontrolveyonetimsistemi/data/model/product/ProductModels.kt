@@ -3,13 +3,6 @@ package com.example.stokkontrolveyonetimsistemi.data.model.product
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
-/**
- * ÜRÜN Etiket Modelleri - GERÇEK BACKEND YAPISINA UYGUN
- */
-
-// ==========================================
-// BACKEND RESPONSE MODELS
-// ==========================================
 
 /**
  * API Response Wrapper

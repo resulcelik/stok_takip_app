@@ -31,10 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.example.stokkontrolveyonetimsistemi.data.model.auth.AuthState
 import com.example.stokkontrolveyonetimsistemi.ui.theme.StokKontrolVeYonetimSistemiTheme
 
-/**
- * Main login screen content
- * Professional Material Design 3 authentication UI
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreenContent(

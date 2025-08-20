@@ -19,16 +19,6 @@ import com.example.stokkontrolveyonetimsistemi.ui.theme.StokKontrolVeYonetimSist
 import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-/**
- * Forgot Password Activity
- * Complete password reset flow:
- * 1. Email input
- * 2. Verification code input
- * 3. New password input
- * 4. Success message
- *
- * ✅ UPDATED: Fixed navigation and back handling
- */
 class ForgotPasswordActivity : ComponentActivity() {
 
     companion object {
@@ -81,19 +71,12 @@ class ForgotPasswordActivity : ComponentActivity() {
         observeViewModelStates()
     }
 
-    /**
-     * Handle back button - navigate to login
-     * ✅ FIXED: Proper super call order
-     */
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         super.onBackPressed()
         navigateBackToLogin()
     }
 
-    /**
-     * Observe ViewModel state changes
-     */
     private fun observeViewModelStates() {
         lifecycleScope.launch {
             forgotPasswordViewModel.resetState.collect { resetState ->
@@ -111,9 +94,6 @@ class ForgotPasswordActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Handle reset state changes
-     */
     private fun handleResetStateChange(resetState: AuthState) {
         when (val currentResetState = resetState) {
             is AuthState.Success -> {
@@ -134,10 +114,6 @@ class ForgotPasswordActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Handle successful password reset completion
-     * ✅ UPDATED: Clean task stack navigation
-     */
     private fun handlePasswordResetSuccess(message: String) {
         Log.d(TAG, "Password reset completed successfully")
 
@@ -151,10 +127,6 @@ class ForgotPasswordActivity : ComponentActivity() {
         finish()
     }
 
-    /**
-     * Navigate back to login screen
-     * ✅ UPDATED: Clean navigation flags
-     */
     private fun navigateBackToLogin() {
         Log.d(TAG, "Navigating back to login")
 
@@ -166,10 +138,6 @@ class ForgotPasswordActivity : ComponentActivity() {
         finish()
     }
 
-    /**
-     * Show toast message
-     */
-
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "ForgotPasswordActivity destroyed")
@@ -179,9 +147,6 @@ class ForgotPasswordActivity : ComponentActivity() {
     }
 }
 
-/**
- * Forgot Password Screen Composable wrapper
- */
 @Composable
 private fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel,

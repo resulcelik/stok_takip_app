@@ -12,15 +12,14 @@ import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.UUID
 
 /**
  * TSC Alpha-3R Bluetooth Printer Service
- * Terminal'den Bluetooth ile RAF etiketi yazdırma
- * 50mm x 30mm etiket için optimize edilmiş
+ * Terminal'den Bluetooth ile RAF/Ürün etiketi yazdırma
+ * 30mm x 15mm (3cm x 1.5cm) etiket için optimize edilmiş
+ * Tarihsiz, sadece barkod içeren minimal tasarım
+ * Barkod %30 büyütülmüş ve tam ortalanmış
  */
 class TscAlpha3RPrinterService(private val context: Context) {
 
@@ -188,14 +187,13 @@ class TscAlpha3RPrinterService(private val context: Context) {
     }
 
     /**
-     * Tek RAF etiketi yazdır (Bluetooth) - DEBUG DESTEKLİ
+     * RAF etiketi yazdır (Bluetooth) - 30mm x 15mm, TARİHSİZ
      */
     suspend fun printRafEtiketBluetooth(
         device: BluetoothDevice,
         rafNumber: String,
         currentIndex: Int,
-        totalCount: Int,
-        useBigText: Boolean = true  // Büyük metin kullan
+        totalCount: Int
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             if (!hasBluetoothPermissions()) {
@@ -210,26 +208,15 @@ class TscAlpha3RPrinterService(private val context: Context) {
             socket.use { connection ->
                 val outputStream = connection.outputStream
 
-                // TSPL komutları oluştur - Büyük metin tercihine göre
-                val tspl = if (useBigText) {
-                    generateTsplForRafEtiketWithBigText(rafNumber, currentIndex, totalCount)
-                } else {
-                    generateTsplForRafEtiket(rafNumber, currentIndex, totalCount)
-                }
-
-                // DEBUG: Gönderilen komutları logla
-                Log.d(TAG, "=== TSPL KOMUTLARI ===")
-                tspl.lines().forEach { line ->
-                    Log.d(TAG, line)
-                }
-                Log.d(TAG, "=== TSPL SON ===")
+                // TSPL komutları oluştur - 30mm x 15mm
+                val tspl = generateTsplForRafEtiket(rafNumber)
 
                 // Printer'a gönder
                 outputStream.write(tspl.toByteArray(Charsets.UTF_8))
                 outputStream.flush()
 
                 // Yazdırma için bekle
-                Thread.sleep(1000)
+                Thread.sleep(800)
 
                 Log.d(TAG, "Etiket gönderildi: $rafNumber")
             }
@@ -243,36 +230,26 @@ class TscAlpha3RPrinterService(private val context: Context) {
     }
 
     /**
-     * RAF etiketi için TSPL komutları oluştur
-     * TSC Alpha-3R için optimize edilmiş - 50mm x 30mm
-     * FİNAL VERSİYON - Sadece barkod ve tarih
+     * RAF etiketi için TSPL komutları - 30mm x 15mm, TARİHSİZ
+     * Basitleştirilmiş ve optimize edilmiş versiyon
      */
-    private fun generateTsplForRafEtiket(
-        rafNumber: String,
-        currentIndex: Int,
-        totalCount: Int
-    ): String {
-        val currentTime = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-            .format(Date())
-
+    private fun generateTsplForRafEtiket(rafNumber: String): String {
         return buildString {
-            // Printer başlangıç ayarları
-            appendLine("SIZE 50 mm, 30 mm")
-            appendLine("GAP 3 mm, 0 mm")
+            // Printer başlangıç ayarları - 30mm x 15mm (3cm x 1.5cm)
+            appendLine("SIZE 30 mm, 15 mm")
+            appendLine("GAP 2 mm, 0 mm")
             appendLine("SPEED 3")
             appendLine("DENSITY 8")
             appendLine("DIRECTION 0")
             appendLine("REFERENCE 0,0")
             appendLine("CLS")
 
-            // SADECE BARKOD VE TARİH - BÜYÜK YAZI YOK!
+            // Basit yaklaşım: Sabit ve test edilmiş değerler
+            // BARCODE komutunun basit kullanımı
+            // X=40 (ortalamak için), Y=20 (yukarı)
+            // height=60 (orta boy), narrow=2, wide=2 (normal kalınlık)
+            appendLine("BARCODE 30,20,\"128M\",50,2,0,1,1,\"$rafNumber\"")
 
-            // Barkod - Üstte ve ortada (readable text ON yapıldı)
-            // Son parametre 1 = barkod altında numara göster
-            appendLine("BARCODE 80,120,\"128\",60,1,0,2,2,\"$rafNumber\"")
-
-            // Tarih/Saat - Sağa kaydırıldı (X=180)
-            appendLine("TEXT 180,30,\"2\",0,1,1,\"$currentTime\"")
 
             // Yazdır
             appendLine("PRINT 1,1")
@@ -280,46 +257,13 @@ class TscAlpha3RPrinterService(private val context: Context) {
     }
 
     /**
-     * ALTERNATIF: Barkod altı yazısı daha büyük - FİNAL VERSİYON
+     * ÜRÜN etiketi yazdır (Bluetooth) - 30mm x 15mm, TARİHSİZ
      */
-    private fun generateTsplForRafEtiketWithBigText(
-        rafNumber: String,
-        currentIndex: Int,
-        totalCount: Int
-    ): String {
-        val currentTime = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-            .format(Date())
-
-        return buildString {
-            appendLine("SIZE 50 mm, 30 mm")
-            appendLine("GAP 3 mm, 0 mm")
-            appendLine("SPEED 3")
-            appendLine("DENSITY 8")
-            appendLine("DIRECTION 0")
-            appendLine("REFERENCE 0,0")
-            appendLine("CLS")
-
-            // RAF numarası - EN ÜSTTE
-            appendLine("TEXT 90,160,\"2\",0,1,2,\"$rafNumber\"")
-
-            // Barkod - ORTADA (numaranın altında)
-            appendLine("BARCODE 80,90,\"128\",55,0,0,2,2,\"$rafNumber\"")
-
-            // Tarih/Saat - EN ALTTA ve DAHA BÜYÜK
-            appendLine("TEXT 140,20,\"2\",0,1,1,\"$currentTime\"")
-
-            appendLine("PRINT 1,1")
-        }
-    }
-
-
-
     suspend fun printUrunEtiketBluetooth(
         device: BluetoothDevice,
         urunNumber: String,
         currentIndex: Int,
-        totalCount: Int,
-        useBigText: Boolean = true
+        totalCount: Int
     ): Boolean = withContext(Dispatchers.IO) {
         try {
             if (!hasBluetoothPermissions()) {
@@ -334,26 +278,15 @@ class TscAlpha3RPrinterService(private val context: Context) {
             socket.use { connection ->
                 val outputStream = connection.outputStream
 
-                // TSPL komutları oluştur
-                val tspl = if (useBigText) {
-                    generateTsplForUrunEtiketWithBigText(urunNumber, currentIndex, totalCount)
-                } else {
-                    generateTsplForUrunEtiket(urunNumber, currentIndex, totalCount)
-                }
-
-                // DEBUG: Gönderilen komutları logla
-                Log.d(TAG, "=== ÜRÜN TSPL KOMUTLARI ===")
-                tspl.lines().forEach { line ->
-                    Log.d(TAG, line)
-                }
-                Log.d(TAG, "=== TSPL SON ===")
+                // TSPL komutları oluştur - 30mm x 15mm
+                val tspl = generateTsplForUrunEtiket(urunNumber)
 
                 // Printer'a gönder
                 outputStream.write(tspl.toByteArray(Charsets.UTF_8))
                 outputStream.flush()
 
                 // Yazdırma için bekle
-                Thread.sleep(1000)
+                Thread.sleep(800)
 
                 Log.d(TAG, "Ürün etiketi gönderildi: $urunNumber")
             }
@@ -367,197 +300,28 @@ class TscAlpha3RPrinterService(private val context: Context) {
     }
 
     /**
-     * ÜRÜN etiketi için TSPL komutları oluştur
-     * TSC Alpha-3R için optimize edilmiş - 50mm x 30mm
-     * Sadece barkod ve tarih - RAF ile aynı format
+     * ÜRÜN etiketi için TSPL komutları - 30mm x 15mm, TARİHSİZ
+     * Basitleştirilmiş ve optimize edilmiş versiyon
      */
-    private fun generateTsplForUrunEtiket(
-        urunNumber: String,
-        currentIndex: Int,
-        totalCount: Int
-    ): String {
-        val currentTime = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-            .format(Date())
-
+    private fun generateTsplForUrunEtiket(urunNumber: String): String {
         return buildString {
-            // Printer başlangıç ayarları
-            appendLine("SIZE 50 mm, 30 mm")
-            appendLine("GAP 3 mm, 0 mm")
+            // Printer başlangıç ayarları - 30mm x 15mm (3cm x 1.5cm)
+            appendLine("SIZE 30 mm, 15 mm")
+            appendLine("GAP 2 mm, 0 mm")
             appendLine("SPEED 3")
             appendLine("DENSITY 8")
             appendLine("DIRECTION 0")
             appendLine("REFERENCE 0,0")
             appendLine("CLS")
 
-            // Barkod - Üstte ve ortada (readable text ON)
-            appendLine("BARCODE 80,120,\"128\",60,1,0,2,2,\"$urunNumber\"")
-
-            // Tarih/Saat - Sağa kaydırıldı
-            appendLine("TEXT 180,30,\"2\",0,1,1,\"$currentTime\"")
+            // Basit yaklaşım: Sabit ve test edilmiş değerler
+            // BARCODE komutunun basit kullanımı
+            // X=40 (ortalamak için), Y=20 (yukarı)
+            // height=60 (orta boy), narrow=2, wide=2 (normal kalınlık)
+            appendLine("BARCODE 30,20,\"128M\",50,2,0,1,1,\"$urunNumber\"")
 
             // Yazdır
             appendLine("PRINT 1,1")
         }
     }
-
-    /**
-     * ALTERNATIF: ÜRÜN etiketi - Büyük yazı versiyonu
-     */
-    private fun generateTsplForUrunEtiketWithBigText(
-        urunNumber: String,
-        currentIndex: Int,
-        totalCount: Int
-    ): String {
-        val currentTime = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-            .format(Date())
-
-        return buildString {
-            appendLine("SIZE 50 mm, 30 mm")
-            appendLine("GAP 3 mm, 0 mm")
-            appendLine("SPEED 3")
-            appendLine("DENSITY 8")
-            appendLine("DIRECTION 0")
-            appendLine("REFERENCE 0,0")
-            appendLine("CLS")
-
-            // ÜRÜN numarası - EN ÜSTTE
-            appendLine("TEXT 90,160,\"2\",0,1,2,\"$urunNumber\"")
-
-            // Barkod - ORTADA (numaranın altında)
-            appendLine("BARCODE 80,90,\"128\",55,0,0,2,2,\"$urunNumber\"")
-
-            // Tarih/Saat - EN ALTTA
-            appendLine("TEXT 140,20,\"2\",0,1,1,\"$currentTime\"")
-
-            appendLine("PRINT 1,1")
-        }
-    }
-
-    /**
-     * Otomatik olarak TSC printer bul ve ÜRÜN etiketi yazdır
-     */
-    suspend fun printUrunEtiketAuto(
-        urunNumber: String,
-        currentIndex: Int,
-        totalCount: Int
-    ): Boolean {
-        val tscPrinter = findPairedTscPrinter()
-        if (tscPrinter == null) {
-            Log.e(TAG, "TSC printer bulunamadı")
-            return false
-        }
-
-        return printUrunEtiketBluetooth(tscPrinter, urunNumber, currentIndex, totalCount)
-    }
-
-    /**
-     * Cihaz bağlantısını test et
-     */
-    suspend fun testConnection(device: BluetoothDevice): Boolean = withContext(Dispatchers.IO) {
-        try {
-            if (!hasBluetoothPermissions()) {
-                Log.e(TAG, "Bluetooth izinleri eksik")
-                return@withContext false
-            }
-
-            Log.d(TAG, "Bağlantı testi: ${device.name}")
-
-            val socket = connectToDevice(device) ?: return@withContext false
-
-            socket.use { connection ->
-                // Basit bir bağlantı testi - sadece bağlan ve kapat
-                Log.d(TAG, "Bağlantı testi başarılı: ${device.name}")
-            }
-
-            return@withContext true
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Bağlantı testi hatası: ${e.message}")
-            return@withContext false
-        }
-    }
-
-    /**
-     * Test etiketi yazdır
-     */
-    suspend fun printTestLabel(device: BluetoothDevice): Boolean = withContext(Dispatchers.IO) {
-        try {
-            if (!hasBluetoothPermissions()) {
-                Log.e(TAG, "Bluetooth izinleri eksik")
-                return@withContext false
-            }
-
-            Log.d(TAG, "Test etiketi yazdırılıyor: ${device.name}")
-
-            val socket = connectToDevice(device) ?: return@withContext false
-
-            socket.use { connection ->
-                val outputStream = connection.outputStream
-
-                // Test etiketi TSPL komutları
-                val testTspl = generateTestLabelTspl()
-
-                // DEBUG: Test komutlarını logla
-                Log.d(TAG, "=== TEST TSPL KOMUTLARI ===")
-                testTspl.lines().forEach { line ->
-                    Log.d(TAG, line)
-                }
-                Log.d(TAG, "=== TEST TSPL SON ===")
-
-                // Printer'a gönder
-                outputStream.write(testTspl.toByteArray(Charsets.UTF_8))
-                outputStream.flush()
-
-                // Yazdırma için bekle
-                Thread.sleep(1000)
-
-                Log.d(TAG, "Test etiketi gönderildi")
-            }
-
-            return@withContext true
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Test etiketi yazdırma hatası: ${e.message}")
-            return@withContext false
-        }
-    }
-
-    /**
-     * Test etiketi TSPL komutları oluştur
-     */
-    private fun generateTestLabelTspl(): String {
-        val currentTime = SimpleDateFormat("dd.MM.yyyy HH:mm:ss", Locale.getDefault())
-            .format(Date())
-
-        return buildString {
-            // Printer başlangıç ayarları
-            appendLine("SIZE 50 mm, 30 mm")
-            appendLine("GAP 3 mm, 0 mm")
-            appendLine("SPEED 3")
-            appendLine("DENSITY 8")
-            appendLine("DIRECTION 0")
-            appendLine("REFERENCE 0,0")
-            appendLine("CLS")
-
-            // Test başlığı
-            appendLine("TEXT 100,180,\"3\",0,1,1,\"TEST\"")
-
-            // TSC Alpha-3R yazısı
-            appendLine("TEXT 60,150,\"2\",0,1,1,\"TSC Alpha-3R\"")
-
-            // Test barkodu
-            appendLine("BARCODE 80,90,\"128\",50,0,0,2,2,\"TEST123\"")
-
-            // Tarih/Saat
-            appendLine("TEXT 50,40,\"1\",0,1,1,\"$currentTime\"")
-
-            // Alt yazı
-            appendLine("TEXT 80,20,\"1\",0,1,1,\"Baglanti Testi\"")
-
-            // Yazdır
-            appendLine("PRINT 1,1")
-        }
-    }
-
-// Bu fonksiyonları TscAlpha3RPrinterService sınıfının sonuna, son fonksiyondan önce ekleyin
 }

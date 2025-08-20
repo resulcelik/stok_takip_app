@@ -234,8 +234,7 @@ class UrunEtiketViewModel(
                     device = device,
                     urunNumber = urunNumber,
                     currentIndex = i,
-                    totalCount = printCount,
-                    useBigText = true
+                    totalCount = printCount
                 )
 
                 if (success) {

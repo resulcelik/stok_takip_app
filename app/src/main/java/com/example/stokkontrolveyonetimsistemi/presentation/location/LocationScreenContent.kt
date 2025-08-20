@@ -1,6 +1,5 @@
 package com.example.stokkontrolveyonetimsistemi.presentation.location
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,13 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.example.stokkontrolveyonetimsistemi.data.model.location.*
 import com.example.stokkontrolveyonetimsistemi.ui.theme.StokKontrolVeYonetimSistemiTheme
 
-/**
- * Location Screen Content
- * Modern Material3 cascade dropdown UI
- *
- * Dosya Konumu: /presentation/location/LocationScreenContent.kt
- * Features: 4-level cascade, loading states, error handling, validation
- */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationScreenContent(
@@ -154,10 +146,6 @@ private fun LocationHeader(
     }
 }
 
-// ==========================================
-// ERROR CARD COMPONENT
-// ==========================================
-
 @Composable
 private fun ErrorCard(
     message: String,
@@ -203,10 +191,6 @@ private fun ErrorCard(
         }
     }
 }
-
-// ==========================================
-// CASCADE DROPDOWN SECTION
-// ==========================================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -404,10 +388,6 @@ private fun <T> LocationDropdown(
     }
 }
 
-// ==========================================
-// SELECTION SUMMARY CARD
-// ==========================================
-
 @Composable
 private fun SelectionSummaryCard(
     summary: String
@@ -453,10 +433,6 @@ private fun SelectionSummaryCard(
         }
     }
 }
-
-// ==========================================
-// ACTION BUTTONS SECTION
-// ==========================================
 
 @Composable
 private fun ActionButtonsSection(
@@ -532,13 +508,7 @@ private fun ActionButtonsSection(
     }
 }
 
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
 
-/**
- * Calculate selection progress for UI
- */
 private fun calculateSelectionProgress(state: LocationSelectionState): Float {
     var progress = 0f
     if (state.selectedBolge != null) progress += 0.25f
@@ -548,19 +518,12 @@ private fun calculateSelectionProgress(state: LocationSelectionState): Float {
     return progress
 }
 
-/**
- * Check if user has made any selection
- */
 private fun hasAnySelection(state: LocationSelectionState): Boolean {
     return state.selectedBolge != null ||
             state.selectedIl != null ||
             state.selectedIlce != null ||
             state.selectedDepo != null
 }
-
-// ==========================================
-// PREVIEW COMPONENTS (Backend'den gelecek gerçek data için hazırlık)
-// ==========================================
 
 @Preview(showBackground = true)
 @Composable

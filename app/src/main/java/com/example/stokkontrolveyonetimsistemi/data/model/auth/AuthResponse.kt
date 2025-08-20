@@ -3,11 +3,6 @@ package com.example.stokkontrolveyonetimsistemi.data.model.auth
 import androidx.annotation.Keep
 import com.google.gson.annotations.SerializedName
 
-/**
- * Authentication response models
- * Backend'den gelen auth response'ları için modeller
- * UPDATED: GetResponse<T> class added for list responses
- */
 
 /**
  * JWT Login response
@@ -46,20 +41,6 @@ data class MessageResponse(
      */
     fun isSuccess(): Boolean = status in 200..299
 
-    /**
-     * Token süresi dolmuş mu?
-     */
-    fun isTokenExpired(): Boolean = status == 401
-
-    /**
-     * Sunucu hatası mı?
-     */
-    fun isServerError(): Boolean = status >= 500
-
-    /**
-     * Client hatası mı?
-     */
-    fun isClientError(): Boolean = status in 400..499
 }
 
 /**
@@ -83,45 +64,13 @@ data class GetResponse<T>(
      */
     fun isSuccess(): Boolean = status in 200..299
 
-    /**
-     * Data mevcut mu?
-     */
-    fun hasData(): Boolean = data != null
 
     /**
      * Safe data access
      */
     fun getDataOrNull(): T? = if (isSuccess()) data else null
 
-    /**
-     * Token süresi dolmuş mu?
-     */
-    fun isTokenExpired(): Boolean = status == 401
 }
-
-/**
- * User information model (gelecekte kullanım için)
- */
-@Keep
-data class UserInfo(
-    @SerializedName("id")
-    val id: Long? = null,
-
-    @SerializedName("username")
-    val username: String? = null,
-
-    @SerializedName("email")
-    val email: String? = null,
-
-    @SerializedName("fullName")
-    val fullName: String? = null,
-
-    @SerializedName("role")
-    val role: String? = null,
-
-    @SerializedName("active")
-    val active: Boolean = true
-)
 
 /**
  * Token validation result

@@ -15,7 +15,9 @@
         <domain includeSubdomains="false">10.10.10.65:8080</domain>
         <domain includeSubdomains="false">10.10.10.65:8443</domain>
         <domain includeSubdomains="false">78.187.40.116</domain>
-        <domain includeSubdomains="false">10.10.10.65</domain>
+        <domain includeSubdomains="false">10.10.10.65</domain>,
+        <domain includeSubdomains="false">192.168.1.154</domain>
+        <domain includeSubdomains="false">172.20.10.3:8080</domain>
 
         <trust-anchors>
             <certificates src="system"/>
